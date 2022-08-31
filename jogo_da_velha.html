@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body{
+            width: 100vw;
+            height: 100vh;
+            background-color: rgb(51, 64, 75);
+            display: grid;
+            justify-content: center;
+            align-content: center;
+        }
+        .jogo_da_velha{
+            background-color: rgb(64, 80, 94);
+            width: 400px;
+            height: 400px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgb(51, 64, 75);
+            display: grid;
+            justify-content: center;
+            align-content: center;
+            justify-items: center;
+            align-items: center;
+            grid-template-columns: repeat(3, auto);
+        }
+        .casa{
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgb(131, 155, 177);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .casa.X, .casa.O{
+            cursor: not-allowed;
+        }
+        .jogo_da_velha.X .casa:not(.X):not(.O):hover::after,
+        .jogo_da_velha.X .casa:not(.X):not(.O):hover::before,
+        .jogo_da_velha.O .casa:not(.X):not(.O):hover::after,
+        .jogo_da_velha.O .casa:not(.X):not(.O):hover::before{
+            background-color: rgba(131, 155, 177,0.1)!important;
+        }
+        .casa:nth-child(1),
+        .casa:nth-child(2),
+        .casa:nth-child(3){
+            border-top: none;
+        }
+        .casa:nth-child(3),
+        .casa:nth-child(6),
+        .casa:nth-child(9){
+            border-right: none;
+        }
+        .casa:nth-child(7),
+        .casa:nth-child(8),
+        .casa:nth-child(9){
+            border-bottom: none;
+        }
+        .casa:nth-child(1),
+        .casa:nth-child(4),
+        .casa:nth-child(7){
+            border-left: none;
+        }
+        
+        /*X*/
+        .casa.X::before,
+        .casa.X::after,
+        .jogo_da_velha.X .casa:not(.X):not(.O):hover::after,
+        .jogo_da_velha.X .casa:not(.X):not(.O):hover::before{
+            content: "";
+            height: calc(100px * 0.15);
+            width: calc(100px* 0.9);
+            background-color: rgb(131, 155, 177);
+            position: absolute;
+        }
+        .casa.X::before,
+        .jogo_da_velha.X .casa:hover::before{
+            transform: rotate(45deg);
+        }
+        .casa.X::after,
+        .jogo_da_velha.X .casa:hover::after{
+            transform: rotate(-45deg);
+        }
+
+        /*O*/
+        .casa.O::before,
+        .casa.O::after,
+        .jogo_da_velha.O .casa:not(.X):not(.O):hover::after,
+        .jogo_da_velha.O .casa:not(.X):not(.O):hover::before{
+            content: "";
+            height: calc(100px * 0.9);
+            width: calc(100px* 0.9);
+            background-color: rgb(131, 155, 177);
+            position: absolute;
+            border-radius: 50%;
+        }
+        .casa.O::before{
+            transform: rotate(45deg);
+        }
+        .casa.O::after{
+            transform: rotate(-45deg);
+        }
+
+        .vencedor{
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0,0,0,0.8);
+            flex-direction: column;
+
+        }
+        .btn_reiniciar{
+            font-size: 30px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            background-color: rgb(131, 155, 177);
+            padding: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            margin-top: 10px;
+            color: rgb(52, 52, 52);
+        }
+        .btn_reiniciar:hover{
+            background-color: rgb(52,52,52);
+            color: rgb(131, 155, 177);
+        }
+        .texto_vencedor{
+            color: rgb(131, 155, 177);
+            font-size: 90px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif
+        }
+
+        .mostrar_vencedor{
+            display: flex;
+        }
+
+    </style>
+</head>
+<body>
+    <section class="jogo_da_velha">
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+        <div class="casa"></div>
+    </section>
+
+    <div class="vencedor">
+        <p class="texto_vencedor">venceu x</p>
+        <input class="btn_reiniciar" type="button" value="Reiniciar" onclick="Reiniciar()">
+    </div>
+
+    <script>
+        const casas = document.getElementsByClassName("casa")
+        const jogo_da_velha = document.getElementsByClassName("jogo_da_velha")
+        const texto_de_vitoria = document.getElementsByClassName("texto_vencedor")
+        const vencedor = document.getElementsByClassName("vencedor")
+
+        let Vez_Circulo
+
+        const possibilidades_de_vitoria =[
+            [0,1,2],
+            [3,4,5],
+            [6,7,8],
+            [0,3,6],
+            [1,4,7],
+            [2,5,8],
+            [0,4,8],
+            [2,4,6],
+        ]
+
+        const comecar_jogo = ()=>{
+            for(const casa of casas){
+                casa.classList.remove("O")
+                casa.classList.remove("X")
+                casa.removeEventListener("click", clicado)
+                casa.addEventListener('click', clicado, {once: true})
+            }
+            Vez_Circulo = false;
+            jogo_da_velha.classList.add("X")
+        }
+
+        const finalizar_jogo = (empate) =>{
+            if(empate){
+                texto_de_vitoria.innerText = "Empate"
+            }else{
+                texto_de_vitoria.innerText = Vez_Circulo ? "O venceu" : "X venceu"
+            }
+
+            vencedor.classList.add("mostrar_vencedor")
+
+        }
+
+        const verif_vitoria = (jogador_da_vez) =>{
+            return possibilidades_de_vitoria.some((combinacao) =>{
+                return combinacao.every((index) =>{    
+                    return casas[index].classList.contains(jogador_da_vez)
+                })
+            })
+        }
+
+
+        const inverter_simbolo = () =>{
+            Vez_Circulo = !Vez_Circulo
+            jogo_da_velha.classList.remove("O")
+            jogo_da_velha.classList.remove("X")
+            if(Vez_Circulo){
+                jogo_da_velha.classList.add("O")
+            }else{
+                jogo_da_velha.classList.add("X")
+            }
+        }
+        const clicado = (e)=>{
+            //Colocar o simbolo certo
+            const Casa = e.target
+            const Add_Casa = Vez_Circulo ? "O" : "X"
+            Casa.classList.add(Add_Casa)
+            //Testar a vitória
+            const ganhou = verif_vitoria(Add_Casa)
+            if(ganhou){
+                finalizar_jogo(false)
+            }
+            //Testar empate
+
+            //Mudar o simbolo
+            inverter_simbolo()
+        }
+        
+
+        comecar_jogo()
+    </script>
+</body>
+</html>
